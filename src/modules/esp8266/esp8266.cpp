@@ -1,7 +1,7 @@
 #include "esp8266.h"
 
 void module_init() {
-  
+
 }
 
 char* module_getSavedToken() {

@@ -17,10 +17,11 @@ public:
   void updateSensor(char sensorname[], char unit[], char value[]);
   void updateSensor(int internalid, char unit[], char value[]);
 private:
+  void _updateSensor(int index, char unit[], char value[]);
   char **server;
   char **devicename;
   char **userid;
-  char **token;
+  char *token;
   int registeredsensors;
   SENSOR *sensors;
 };
