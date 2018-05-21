@@ -2,12 +2,19 @@
 
 #ifdef MODULE_EXISTS
 
-Suspicious::Suspicious(char* server, char* devicename, char* userid, int sensorcount) {
-  this->server = &server;
-  this->devicename = &devicename;
-  this->userid = &userid;
-  this->registeredsensors = 0;
-  this->sensors = new SENSOR[sensorcount];
+char** Suspicious::server;
+char** Suspicious::devicename;
+char** Suspicious::userid;
+char* Suspicious::token;
+int Suspicious::registeredsensors;
+SENSOR* Suspicious::sensors;
+
+void Suspicious::begin(char* server, char* devicename, char* userid, int sensorcount) {
+  Suspicious::server = &server;
+  Suspicious::devicename = &devicename;
+  Suspicious::userid = &userid;
+  Suspicious::registeredsensors = 0;
+  Suspicious::sensors = new SENSOR[sensorcount];
 }
 
 s_wlan_connection_status Suspicious::connectWiFi(char* ssid, char* psk, int timeout) {
@@ -23,14 +30,14 @@ void Suspicious::registerSensor(char* sensorname, int internalid, char* unit, in
   newsensor.minupdatefreq = minupdatefreq;
   newsensor.maxupdatefreq = maxupdatefreq;
 
-  this->sensors[this->registeredsensors] = newsensor;
-  this->registeredsensors++;
+  Suspicious::sensors[Suspicious::registeredsensors] = newsensor;
+  Suspicious::registeredsensors++;
 }
 
-s_init_status Suspicious::init() {
+s_startup_status Suspicious::startup() {
   module_init();
 
-  if (this->token = module_getSavedToken()) {
+  if (Suspicious::token = module_getSavedToken()) {
     return TOKEN_PRESENT;
   } else {
     //TODO request token
@@ -45,17 +52,17 @@ bool Suspicious::tokenValidated() {
 }
 
 void Suspicious::updateSensor(char* sensorname, char* unit, char* value) {
-  for (int i = 0; i < this->registeredsensors - 1; i++) {
-    if (this->sensors[i].sensorname == sensorname) {
-      this->_updateSensor(i, unit, value);
+  for (int i = 0; i < Suspicious::registeredsensors - 1; i++) {
+    if (Suspicious::sensors[i].sensorname == sensorname) {
+      Suspicious::_updateSensor(i, unit, value);
     }
   }
 }
 
 void Suspicious::updateSensor(int internalid, char* unit, char* value) {
-  for (int i = 0; i < this->registeredsensors - 1; i++) {
-    if (this->sensors[i].internalid == internalid) {
-      this->_updateSensor(i, unit, value);
+  for (int i = 0; i < Suspicious::registeredsensors - 1; i++) {
+    if (Suspicious::sensors[i].internalid == internalid) {
+      Suspicious::_updateSensor(i, unit, value);
     }
   }
 }

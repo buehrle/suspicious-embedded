@@ -1,7 +1,7 @@
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
 
-//#include "core/suspicious.h"
+#include "core/suspicious.h"
 
 const char SSID[] = "ipfire@buehrle";
 const char PSK[] = "FFG5RT6890OP";
@@ -20,7 +20,7 @@ void setup() {
 }
 
 void loop() {
-
+  Suspicious::startup();
 }
 
 void connectWiFi() {

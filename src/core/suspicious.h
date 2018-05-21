@@ -11,7 +11,7 @@ enum s_wlan_connection_status {
   FAILED
 };
 
-enum s_init_status {
+enum s_startup_status {
   TOKEN_REQUESTED,
   TOKEN_PRESENT,
   ERROR
@@ -19,21 +19,22 @@ enum s_init_status {
 
 class Suspicious {
 public:
-  Suspicious(char* server, char* devicename, char* userid, int sensorcount);
+  static void begin(char* server, char* devicename, char* userid, int sensorcount);
   static s_wlan_connection_status connectWiFi(char* ssid, char* psk, int timeout);
-  void registerSensor(char* sensorname, int internalid, char* unit, int defaultupdatefreq, int minupdatefreq, int maxupdatefreq);
-  s_init_status init();
-  bool tokenValidated();
-  void updateSensor(char* sensorname, char* unit, char* value);
-  void updateSensor(int internalid, char* unit, char* value);
+  static void registerSensor(char* sensorname, int internalid, char* unit, int defaultupdatefreq, int minupdatefreq, int maxupdatefreq);
+  static s_startup_status startup();
+  static bool tokenValidated();
+  static void updateSensor(char* sensorname, char* unit, char* value);
+  static void updateSensor(int internalid, char* unit, char* value);
 private:
-  void _updateSensor(int index, char* unit, char* value);
-  char **server;
-  char **devicename;
-  char **userid;
-  char *token;
-  int registeredsensors;
-  SENSOR *sensors;
+  Suspicious() {};
+  static void _updateSensor(int index, char* unit, char* value);
+  static char** server;
+  static char** devicename;
+  static char** userid;
+  static char* token;
+  static int registeredsensors;
+  static SENSOR* sensors;
 };
 
 #endif
