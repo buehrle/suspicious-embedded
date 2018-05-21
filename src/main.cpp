@@ -3,8 +3,8 @@
 
 //#include "core/suspicious.h"
 
-const char SSID[] = "MIB";
-const char PSK[] = "97654321";
+const char SSID[] = "ipfire@buehrle";
+const char PSK[] = "FFG5RT6890OP";
 
 WiFiClient client;
 
@@ -13,6 +13,10 @@ void connectWiFi();
 void setup() {
   Serial.begin(9600);
   connectWiFi();
+
+  if (client.connect("www.google.com", 80) ) {
+    Serial.print("Yee.");
+  }
 }
 
 void loop() {
