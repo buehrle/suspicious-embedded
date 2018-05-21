@@ -38,17 +38,44 @@ void Suspicious::registerSensor(char* sensorname, int internalid, char* unit, in
 }
 
 s_startup_status Suspicious::startup() {
-  if (module_getSavedToken() != nullptr) {
+  if (module_tokenPresent()) {
     Suspicious::token = module_getSavedToken();
-    return TOKEN_PRESENT;
+    return STARTUP_TOKEN_PRESENT;
   } else {
-    //TODO request token
-    return TOKEN_REQUESTED;
+    DynamicJsonBuffer buffer;
+
+    JsonObject& root = buffer.createObject();
+    root["name"] = Suspicious::devicename;
+    root["deviceRegistrationToken"] = Suspicious::registrationtoken;
+
+    JsonArray& sensors = root.createNestedArray("sensors");
+
+    for (int i = 0; i < Suspicious::registeredsensors; i++) {
+      JsonObject& sensor = sensors.createNestedObject();
+      sensor["name"] = Suspicious::sensors[i].sensorname;
+      sensor["internalID"] = Suspicious::sensors[i].internalid;
+      sensor["unit"] = Suspicious::sensors[i].unit;
+      sensor["defaultUpdateFrequency"] = Suspicious::sensors[i].defaultupdatefreq;
+      sensor["minUpdateFrequency"] = Suspicious::sensors[i].minupdatefreq;
+      sensor["maxUpdateFrequency"] = Suspicious::sensors[i].maxupdatefreq;
+    }
+
+    char* requeststring;
+    char* responsestring;
+
+    root.printTo(requeststring);
+
+    s_request_status status = module_sendJSON(Suspicious::server, 80, ROUTE_DEVICE_REGISTRATION, requeststring, responsestring);
+
+    if (status == CONNECTION_LOST) return STARTUP_CONNECTION_LOST;
+    if (status == HTTP_ERROR) return STARTUP_ERROR;
+
+    return STARTUP_TOKEN_REQUESTED;
   }
 }
 
 bool Suspicious::tokenValidated() {
-  //TODO Some magic with module_sendData
+  //TODO Some magic with module_sendJSON
   //Request to the REST service and check if saved token is validated
   return true;
 }

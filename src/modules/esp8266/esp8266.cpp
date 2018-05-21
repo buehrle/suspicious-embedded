@@ -15,25 +15,66 @@ void module_init() {
 }
 
 void module_saveToken(char* token) {
-  for (int i = 0; i < 64; i++) {
+  for (int i = 1; i < 65; i++) {
     EEPROM.write(i, token[i]);
   }
 
+  EEPROM.write(0, 111);
+
   EEPROM.commit();
+}
+
+bool module_tokenPresent() {
+  return (EEPROM.read(0) == 111);
 }
 
 char* module_getSavedToken() {
   char* token = new char[64];
 
-  for (uint i = 0; i < 64; i++) {
+  for (int i = 1; i < 65; i++) {
     token[i] = EEPROM.read(i);
   }
-  
+
   return token;
 }
 
-char* module_sendData(char uri[], char data[]) {
-  return new char[0];
+s_request_status module_sendJSON(char* host, int port, const char* uri, char* data, char* &response) {
+  if (module_debug) {
+    Serial.print("Sending HTTP request...\r\n");
+  }
+
+  if (WiFi.status() == WL_CONNECTED) {
+    HTTPClient httpclient;
+
+    httpclient.begin(host, port, uri, false, "");
+    httpclient.addHeader("Content-Type", "text/json");
+
+    int httpcode = httpclient.POST(data);
+
+    if (httpcode != 200) {
+      httpclient.end();
+
+      if (module_debug) {
+        Serial.print("HTTP error occured.\r\n");
+      }
+
+      return HTTP_ERROR;
+    }
+
+    String _response = httpclient.getString();
+    response = new char[_response.length() + 1];
+    strcpy(response, _response.c_str());
+
+    httpclient.end();
+
+    if (module_debug) {
+      Serial.print("HTTP request successful.\r\n");
+    }
+
+    return HTTP_SUCCESSFUL;
+  } else {
+    return CONNECTION_LOST;
+  }
 }
 
 s_wlan_connection_status module_connectWiFi(char* ssid, char* psk, int timeout) {
@@ -58,6 +99,8 @@ s_wlan_connection_status module_connectWiFi(char* ssid, char* psk, int timeout) 
     delay(10);
     timeoutcount += 10;
   }
+
+  WiFi.disconnect();
 
   if (module_debug) {
     Serial.print("Failed to establish a WiFi-connection.\r\n");

@@ -5,11 +5,15 @@
 #include "sensor.h"
 #include "../modules/module.h"
 #include "../modules/wifi.h"
+#include <ArduinoJson.h>
+
+#define ROUTE_DEVICE_REGISTRATION "/public/api/devices"
 
 enum s_startup_status {
-  TOKEN_REQUESTED,
-  TOKEN_PRESENT,
-  ERROR
+  STARTUP_TOKEN_REQUESTED,
+  STARTUP_TOKEN_PRESENT,
+  STARTUP_CONNECTION_LOST,
+  STARTUP_ERROR
 };
 
 class Suspicious {
