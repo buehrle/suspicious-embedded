@@ -1,36 +1,17 @@
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
 
+#include "modules/esp8266/esp8266.h"
 #include "core/suspicious.h"
 
-const char SSID[] = "ipfire@buehrle";
-const char PSK[] = "FFG5RT6890OP";
-
-WiFiClient client;
-
-void connectWiFi();
+char SSID[] = "Gast";
+char PSK[] = "";
 
 void setup() {
-  Serial.begin(9600);
-  connectWiFi();
-
-  if (client.connect("www.google.com", 80) ) {
-    Serial.print("Yee.");
-  }
+  Suspicious::init("127.0.0.1", "Flo's Testdevice", "0", 2, true);
+  Suspicious::connectWiFi(SSID, PSK, 10000);
 }
 
 void loop() {
-  Suspicious::startup();
-}
 
-void connectWiFi() {
-  WiFi.mode(WIFI_STA); //Station (client)
-  WiFi.begin(SSID, PSK);
-
-  while (WiFi.status() != WL_CONNECTED) {
-    Serial.print("Attempting connection...\r\n");
-    delay(1000);
-  }
-
-  Serial.print("Connected.\r\n");
 }

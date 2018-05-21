@@ -1,24 +1,27 @@
 #include "suspicious.h"
 
-#ifdef MODULE_EXISTS
-
-char** Suspicious::server;
-char** Suspicious::devicename;
-char** Suspicious::userid;
+char* Suspicious::server;
+char* Suspicious::devicename;
+char* Suspicious::registrationtoken;
 char* Suspicious::token;
 int Suspicious::registeredsensors;
 SENSOR* Suspicious::sensors;
 
-void Suspicious::begin(char* server, char* devicename, char* userid, int sensorcount) {
-  Suspicious::server = &server;
-  Suspicious::devicename = &devicename;
-  Suspicious::userid = &userid;
+bool module_debug = true;
+
+void Suspicious::init(char* server, char* devicename, char* registrationtoken, int sensorcount, bool debug) {
+  Suspicious::server = server;
+  Suspicious::devicename = devicename;
+  Suspicious::registrationtoken = registrationtoken;
   Suspicious::registeredsensors = 0;
   Suspicious::sensors = new SENSOR[sensorcount];
+  module_debug = debug;
+
+  module_init();
 }
 
 s_wlan_connection_status Suspicious::connectWiFi(char* ssid, char* psk, int timeout) {
-
+  return module_connectWiFi(ssid, psk, timeout);
 }
 
 void Suspicious::registerSensor(char* sensorname, int internalid, char* unit, int defaultupdatefreq, int minupdatefreq, int maxupdatefreq) {
@@ -35,9 +38,8 @@ void Suspicious::registerSensor(char* sensorname, int internalid, char* unit, in
 }
 
 s_startup_status Suspicious::startup() {
-  module_init();
-
-  if (Suspicious::token = module_getSavedToken()) {
+  if (module_getSavedToken() != nullptr) {
+    Suspicious::token = module_getSavedToken();
     return TOKEN_PRESENT;
   } else {
     //TODO request token
@@ -70,7 +72,3 @@ void Suspicious::updateSensor(int internalid, char* unit, char* value) {
 void Suspicious::_updateSensor(int index, char* unit, char* value) {
 
 }
-
-#else
-#error "You have to specify a module!"
-#endif
