@@ -44,31 +44,42 @@ s_startup_status Suspicious::startup() {
   } else {
     DynamicJsonBuffer buffer;
 
-    JsonObject& root = buffer.createObject();
-    root["name"] = Suspicious::devicename;
-    root["deviceRegistrationToken"] = Suspicious::registrationtoken;
+    JsonObject& out_root = buffer.createObject();
+    out_root["name"] = Suspicious::devicename;
+    out_root["deviceRegistrationToken"] = Suspicious::registrationtoken;
 
-    JsonArray& sensors = root.createNestedArray("sensors");
+    JsonArray& out_sensors = out_root.createNestedArray("sensors");
 
     for (int i = 0; i < Suspicious::registeredsensors; i++) {
-      JsonObject& sensor = sensors.createNestedObject();
-      sensor["name"] = Suspicious::sensors[i].sensorname;
-      sensor["internalID"] = Suspicious::sensors[i].internalid;
-      sensor["unit"] = Suspicious::sensors[i].unit;
-      sensor["defaultUpdateFrequency"] = Suspicious::sensors[i].defaultupdatefreq;
-      sensor["minUpdateFrequency"] = Suspicious::sensors[i].minupdatefreq;
-      sensor["maxUpdateFrequency"] = Suspicious::sensors[i].maxupdatefreq;
+      JsonObject& out_sensor = out_sensors.createNestedObject();
+      out_sensor["name"] = Suspicious::sensors[i].sensorname;
+      out_sensor["internalID"] = Suspicious::sensors[i].internalid;
+      out_sensor["unit"] = Suspicious::sensors[i].unit;
+      out_sensor["defaultUpdateFrequency"] = Suspicious::sensors[i].defaultupdatefreq;
+      out_sensor["minUpdateFrequency"] = Suspicious::sensors[i].minupdatefreq;
+      out_sensor["maxUpdateFrequency"] = Suspicious::sensors[i].maxupdatefreq;
     }
 
     char* requeststring;
     char* responsestring;
 
-    root.printTo(requeststring);
+    out_root.printTo(requeststring);
+
+    delete [] &out_root;
+    delete [] &out_sensors;
+
+    buffer.clear();
 
     s_request_status status = module_sendJSON(Suspicious::server, 80, ROUTE_DEVICE_REGISTRATION, requeststring, responsestring);
 
     if (status == CONNECTION_LOST) return STARTUP_CONNECTION_LOST;
     if (status == HTTP_ERROR) return STARTUP_ERROR;
+
+    JsonObject& in_root = buffer.parseObject(responsestring);
+
+    char* token = in_root["token"];
+    Suspicious::token = token;
+    module_saveToken(token);
 
     return STARTUP_TOKEN_REQUESTED;
   }

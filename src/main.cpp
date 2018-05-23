@@ -10,10 +10,6 @@ char PSK[] = "";
 void setup() {
   Suspicious::init("127.0.0.1", "Flo's Testdevice", "0", 2, true);
   Suspicious::connectWiFi(SSID, PSK, 10000);
-
-  char* lello;
-
-  module_sendJSON("http://192.168.50.101:80", "LEL", lello);
 }
 
 void loop() {
